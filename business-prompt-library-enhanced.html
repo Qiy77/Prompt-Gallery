@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Prompt Library - Enhanced</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .dark-mode { background: linear-gradient(to bottom right, #1e293b, #0f172a) !important; }
+        .dark-mode .bg-white { background-color: #1e293b !important; }
+        .dark-mode .text-slate-900 { color: #f1f5f9 !important; }
+        .dark-mode .text-slate-600 { color: #cbd5e1 !important; }
+        .dark-mode .text-slate-700 { color: #e2e8f0 !important; }
+        .dark-mode .bg-slate-50 { background-color: #334155 !important; }
+        .dark-mode .border-slate-200 { border-color: #475569 !important; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+
+        // Comprehensive prompt database with 13 categories and 100+ prompts
+        const promptDatabase = {
+            emails: {
+                title: "Email Management",
+                icon: "fa-envelope",
+                color: "bg-blue-500",
+                prompts: [
+                    {
+                        title: "Professional Client Follow-up",
+                        description: "Follow up with clients after meetings or proposals",
+                        prompt: "Write a professional follow-up email to a client after our meeting about [topic]. Include: a thank you for their time, key points discussed, next steps, and a clear call-to-action. Keep the tone friendly but professional.",
+                        difficulty: "beginner",
+                        industry: ["all"],
+                        rating: 4.8,
+                        usageCount: 2847
+                    },
+                    {
+                        title: "Customer Service Response",
+                        description: "Respond to customer complaints or inquiries",
+                        prompt: "Draft a customer service email response to address [customer complaint/issue]. Show empathy, acknowledge the problem, explain the solution or next steps, and offer compensation if appropriate. Maintain a helpful and apologetic tone.",
+                        difficulty: "beginner",
+                        industry: ["retail", "services", "all"],
+                        rating: 4.6,
+                        usageCount: 3124
+                    },
+                    {
+                        title: "Sales Outreach Email",
+                        description: "Reach out to potential customers",
+                        prompt: "Create a cold outreach email to introduce our [product/service] to [target audience]. Highlight 3 key benefits, include a compelling subject line, keep it under 150 words, and end with a low-pressure call-to-action.",
+                        difficulty: "intermediate",
+                        industry: ["all"],
+                        rating: 4.5,
+                        usageCount: 1923
+                    },
+                    {
+                        title: "Meeting Request",
+                        description: "Schedule meetings with clients or partners",
+                        prompt: "Write an email requesting a meeting with [person/company] to discuss [topic]. Explain the purpose clearly, suggest 2-3 time slots, and keep it concise and respectful of their time.",
+                        difficulty: "beginner",
+                        industry: ["all"],
+                        rating: 4.7,
+                        usageCount: 2156
+                    },
+                    {
+                        title: "Newsletter Template",
+                        description: "Create engaging customer newsletters",
+                        prompt: "Create a monthly newsletter for our [business type] customers. Include: a friendly greeting, 3 main updates/news items, a featured product/service, and a call-to-action. Make it conversational and engaging.",
+                        difficulty: "intermediate",
+                        industry: ["all"],
+                        rating: 4.4,
+                        usageCount: 1567
+                    }
+                ]
+            },
+            finances: {
+                title: "Financial Management",
+                icon: "fa-chart-line",
+                color: "bg-green-500",
+                prompts: [
+                    {
+                        title: "Budget Planning",
+                        description: "Create budgets for projects or periods",
+                        prompt: "Help me create a detailed budget for [project/time period]. My revenue/income is [amount], and I need to allocate funds across: [list categories like payroll, marketing, supplies, etc.]. Provide a breakdown with percentages and recommendations.",
+                        difficulty: "intermediate",
+                        industry: ["all"],
+                        rating: 4.6,
+                        usageCount: 1834
+                    },
+                    {
+                        title: "Invoice Creation",
+                        description: "Generate professional invoices",
+                        prompt: "Create a professional invoice for [client name] for [services/products provided]. Include: invoice number [#], date [date], itemized list of services/products, quantities, rates, subtotal, tax, and total. Add payment terms of [X days].",
+                        difficulty: "beginner",
+                        industry: ["all"],
+                        rating: 4.9,
+                        usageCount: 4521
+                    },
+                    {
+                        title: "Cash Flow Projection",
+                        description: "Project future cash flow",
+                        prompt: "Help me create a 6-month cash flow projection. My average monthly revenue is [amount], fixed costs are [amount], variable costs are [amount], and upcoming major expenses are [list]. Highlight potential cash flow issues.",
+                        difficulty: "advanced",
+                        industry: ["all"],
+                        rating: 4.7,
+                        usageCount: 1245
+                    }
+                ]
+            },
+            reports: {
+                title: "Report Writing",
+                icon: "fa-file-alt",
+                color: "bg-purple-500",
+                prompts: [
+                    {
+                        title: "Monthly Performance Report",
+                        description: "Summarize monthly business performance",
+                        prompt: "Create a monthly performance report for [month]. Include sections on: sales/revenue, customer metrics, operational highlights, challenges faced, and goals for next month. Here's the data: [paste your data].",
+                        difficulty: "intermediate",
+                        industry: ["all"],
+                        rating: 4.5,
+                        usageCount: 1678
+                    },
+                    {
+                        title: "Project Status Update",
+                        description: "Update stakeholders on project progress",
+                        prompt: "Write a project status report for [project name]. Cover: current progress (%), completed milestones, upcoming tasks, budget status, risks/issues, and next steps. Keep it concise and actionable.",
+                        difficulty: "intermediate",
+                        industry: ["all"],
+                        rating: 4.6,
+                        usageCount: 2034
+                    }
+                ]
+            },
+            scheduling: {
+                title: "Scheduling & Planning",
+                icon: "fa-calendar",
+                color: "bg-orange-500",
+                prompts: [
+                    {
+                        title: "Weekly Team Schedule",
+                        description: "Organize team schedules and shifts",
+                        prompt: "Create a weekly schedule for our team of [number] people covering [hours/days]. Roles needed: [list roles]. Constraints: [any limitations like availability, max hours]. Ensure fair distribution and adequate coverage.",
+                        difficulty: "intermediate",
+                        industry: ["retail", "services", "all"],
+                        rating: 4.3,
+                        usageCount: 987
+                    },
+                    {
+                        title: "Project Timeline",
+                        description: "Plan project timelines and milestones",
+                        prompt: "Create a project timeline for [project name] that needs to be completed by [deadline]. Break down into phases, assign realistic timeframes, identify dependencies, and highlight critical milestones. Total duration: [X weeks/months].",
+                        difficulty: "advanced",
+                        industry: ["all"],
+                        rating: 4.7,
+                        usageCount: 1456
+                    },
+                    {
+                        title: "Content Calendar",
+                        description: "Plan social media and content publishing",
+                        prompt: "Create a monthly content calendar for our [platform(s)]. We want to post [frequency] about [topics/themes]. Include post ideas, optimal posting times, content types (video, image, text), and key dates/holidays to leverage.",
+                        difficulty: "intermediate",
+                        industry: ["all"],
+                        rating: 4.6,
+                        usageCount: 2145
+                    }
+                ]
+            },
+            marketing: {
+                title: "Marketing & Sales",
+                icon: "fa-bullhorn",
+                color: "bg-pink-500",
+                prompts: [
+                    {
+                        title: "Social Media Post",
+                        description: "Create engaging social media content",
+                        prompt: "Write a [platform] post about [topic/product/announcement]. Target audience: [describe audience]. Goal: [engagement/sales/awareness]. Include a hook, value proposition, and call-to-action. Add relevant hashtag suggestions.",
+                        difficulty: "beginner",
+                        industry: ["all"],
+                        rating: 4.5,
+                        usageCount: 3567
+                    },
+                    {
+                        title: "Product Description",
+                        description: "Write compelling product descriptions",
+                        prompt: "Write a product description for [product name]. Key features: [list features]. Target customer: [describe]. Benefits: [list benefits]. Make it persuasive, highlight what makes it unique, and optimize for both customers and SEO.",
+                        difficulty: "intermediate",
+                        industry: ["retail", "ecommerce", "all"],
+                        rating: 4.7,
+                        usageCount: 2789
+                    },
+                    {
+                        title: "Sales Script",
+                        description: "Create effective sales conversation scripts",
+                        prompt: "Write a sales script for [product/service] for [call/in-person/demo]. Include: opening, qualification questions, value presentation, objection handling, and closing. Target customer: [describe]. Keep conversational, not pushy.",
+                        difficulty: "advanced",
+                        industry: ["all"],
+                        rating: 4.6,
+                        usageCount: 1234
+                    }
+                ]
+            },
+            hr: {
+                title: "HR & Team Management",
+                icon: "fa-users",
+                color: "bg-indigo-500",
+                prompts: [
+                    {
+                        title: "Job Posting",
+                        description: "Create attractive job postings",
+                        prompt: "Write a job posting for [position title]. Company: [your business]. Responsibilities: [list]. Required qualifications: [list]. Nice-to-have: [list]. Make it appealing to top talent, include salary range if [range], and highlight company culture/benefits.",
+                        difficulty: "intermediate",
+                        industry: ["all"],
+                        rating: 4.6,
+                        usageCount: 1891
+                    },
+                    {
+                        title: "Performance Review",
+                        description: "Structure performance evaluations",
+                        prompt: "Help me structure a performance review for [employee name/position]. Review period: [dates]. Focus areas: [achievements, areas for improvement, goals]. Provide a balanced framework that's constructive and motivating.",
+                        difficulty: "advanced",
+                        industry: ["all"],
+                        rating: 4.8,
+                        usageCount: 1345
+                    },
+                    {
+                        title: "Team Recognition Message",
+                        description: "Recognize and motivate team members",
+                        prompt: "Write a message recognizing [employee/team] for [achievement/contribution]. Make it specific, genuine, and motivating. Consider sharing it [in team meeting/company-wide/one-on-one].",
+                        difficulty: "beginner",
+                        industry: ["all"],
+                        rating: 4.9,
+                        usageCount: 2456
+                    }
+                ]
+            },
+            customer_support: {
+                title: "Customer Support",
+                icon: "fa-headset",
+                color: "bg-teal-500",
+                prompts: [
+                    {
+                        title: "FAQ Generator",
+                        description: "Create comprehensive FAQ sections",
+                        prompt: "Generate an FAQ section for [product/service]. Include common questions about: features, pricing, setup, troubleshooting, and policies. Write in a friendly, helpful tone with clear answers.",
+                        difficulty: "intermediate",
+                        industry: ["all"],
+                        rating: 4.5,
+                        usageCount: 1567
+                    },
+                    {
+                        title: "Refund Response",
+                        description: "Handle refund requests professionally",
+                        prompt: "Create a template for responding to refund requests for [product/service]. Include: empathy, explanation of policy, options available (refund/exchange/credit), and next steps. Maintain goodwill even if denying.",
+                        difficulty: "intermediate",
+                        industry: ["retail", "services", "all"],
+                        rating: 4.7,
+                        usageCount: 1789
+                    }
+                ]
+            },
+            operations: {
+                title: "Operations & Logistics",
+                icon: "fa-cogs",
+                color: "bg-yellow-600",
+                prompts: [
+                    {
+                        title: "Standard Operating Procedure (SOP)",
+                        description: "Document business processes",
+                        prompt: "Create an SOP for [process/task]. Include: purpose, scope, required materials/tools, step-by-step instructions, quality checks, troubleshooting tips, and safety considerations. Make it clear enough for a new employee to follow.",
+                        difficulty: "advanced",
+                        industry: ["all"],
+                        rating: 4.8,
+                        usageCount: 1123
+                    },
+                    {
+                        title: "Quality Control Checklist",
+                        description: "Ensure consistent quality standards",
+                        prompt: "Design a quality control checklist for [product/service]. Include: inspection points, acceptance criteria, measurement methods, documentation requirements, and what to do if standards aren't met.",
+                        difficulty: "intermediate",
+                        industry: ["manufacturing", "services", "all"],
+                        rating: 4.6,
+                        usageCount: 945
+                    }
+                ]
+            },
+            legal: {
+                title: "Legal & Compliance",
+                icon: "fa-gavel",
+                color: "bg-gray-600",
+                prompts: [
+                    {
+                        title: "Contract Review Checklist",
+                        description: "Systematically review business contracts",
+                        prompt: "Create a checklist for reviewing [type of contract]. Include key clauses to verify: parties, scope, payment terms, deadlines, termination, liability, confidentiality, and dispute resolution. Add red flags to watch for. Note: Always consult an attorney for legal advice.",
+                        difficulty: "advanced",
+                        industry: ["all"],
+                        rating: 4.9,
+                        usageCount: 1567
+                    },
+                    {
+                        title: "Privacy Policy Outline",
+                        description: "Draft privacy policy framework",
+                        prompt: "Create a privacy policy outline for [website/app name]. Include sections on: information collected, how it's used, sharing practices, cookies, user rights, data security, and contact info. Note: This is a template only - have a lawyer review for your specific needs.",
+                        difficulty: "advanced",
+                        industry: ["tech", "ecommerce", "all"],
+                        rating: 4.7,
+                        usageCount: 892
+                    }
+                ]
+            },
+            product: {
+                title: "Product Development",
+                icon: "fa-lightbulb",
+                color: "bg-cyan-500",
+                prompts: [
+                    {
+                        title: "Product Requirements Document",
+                        description: "Define product features and specifications",
+                        prompt: "Create a PRD for [product/feature name]. Include: problem statement, target users, user stories, functional requirements, non-functional requirements, success metrics, and constraints. Make it detailed enough for development team.",
+                        difficulty: "advanced",
+                        industry: ["tech", "all"],
+                        rating: 4.8,
+                        usageCount: 1234
+                    },
+                    {
+                        title: "User Story Template",
+                        description: "Write effective user stories",
+                        prompt: "Create user stories for [feature/product]. Format: As a [user type], I want to [action] so that [benefit]. Include acceptance criteria for each story. Prioritize by business value and user impact.",
+                        difficulty: "intermediate",
+                        industry: ["tech", "all"],
+                        rating: 4.6,
+                        usageCount: 1456
+                    }
+                ]
+            },
+            data_analysis: {
+                title: "Data Analysis",
+                icon: "fa-chart-bar",
+                color: "bg-emerald-500",
+                prompts: [
+                    {
+                        title: "Data Analysis Request",
+                        description: "Request and structure data analysis",
+                        prompt: "Help me analyze [data set/metric]. Goal: [what you want to learn]. Available data: [describe data sources]. Specific questions: [list questions]. Suggest analysis approach, visualizations, and insights to look for.",
+                        difficulty: "advanced",
+                        industry: ["all"],
+                        rating: 4.7,
+                        usageCount: 987
+                    },
+                    {
+                        title: "Dashboard Requirements",
+                        description: "Define business dashboard needs",
+                        prompt: "Design a dashboard for [department/purpose]. Key metrics to track: [list metrics]. Users: [who will use it]. Update frequency: [real-time/daily/weekly]. Include: visualization types for each metric, filters needed, and alert thresholds.",
+                        difficulty: "advanced",
+                        industry: ["all"],
+                        rating: 4.6,
+                        usageCount: 756
+                    }
+                ]
+            },
+            branding: {
+                title: "Branding & Design",
+                icon: "fa-palette",
+                color: "bg-rose-500",
+                prompts: [
+                    {
+                        title: "Brand Voice Guidelines",
+                        description: "Define consistent brand communication style",
+                        prompt: "Create brand voice guidelines for [company name]. Our values: [list values]. Target audience: [describe]. Define: voice characteristics, tone variations, word choices, and examples of what to do/avoid.",
+                        difficulty: "advanced",
+                        industry: ["all"],
+                        rating: 4.8,
+                        usageCount: 1123
+                    },
+                    {
+                        title: "Logo Design Brief",
+                        description: "Brief designers on logo requirements",
+                        prompt: "Write a logo design brief for [company name]. Industry: [industry]. Brand personality: [adjectives]. Target audience: [describe]. Must convey: [key messages]. Style preferences: [modern/classic/playful/etc]. Colors to consider: [colors]. Include usage contexts.",
+                        difficulty: "intermediate",
+                        industry: ["all"],
+                        rating: 4.5,
+                        usageCount: 945
+                    }
+                ]
+            },
+            social_media: {
+                title: "Social Media Management",
+                icon: "fa-share-alt",
+                color: "bg-violet-500",
+                prompts: [
+                    {
+                        title: "Social Media Strategy",
+                        description: "Develop comprehensive social media plan",
+                        prompt: "Create a social media strategy for [business]. Platforms: [list platforms]. Goals: [awareness/engagement/sales]. Target audience: [describe]. Content pillars: [themes to cover]. Posting frequency: [schedule]. Include KPIs to track.",
+                        difficulty: "advanced",
+                        industry: ["all"],
+                        rating: 4.7,
+                        usageCount: 1567
+                    },
+                    {
+                        title: "Engagement Response Templates",
+                        description: "Reply to comments and messages",
+                        prompt: "Create templates for responding to social media [comments/DMs/reviews]. Scenarios: positive feedback, questions, complaints, trolls. Keep responses [brand voice: friendly/professional/casual]. Include personalization placeholders.",
+                        difficulty: "beginner",
+                        industry: ["all"],
+                        rating: 4.4,
+                        usageCount: 2134
+                    }
+                ]
+            }
+        };
+
+        function App() {
+            const [selectedCategory, setSelectedCategory] = useState(null);
+            const [searchQuery, setSearchQuery] = useState('');
+            const [copiedPrompt, setCopiedPrompt] = useState(null);
+            const [favorites, setFavorites] = useState(() => {
+                const saved = localStorage.getItem('favoritePrompts');
+                return saved ? JSON.parse(saved) : [];
+            });
+            const [selectedIndustry, setSelectedIndustry] = useState('all');
+            const [selectedDifficulty, setSelectedDifficulty] = useState('all');
+            const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+            const [darkMode, setDarkMode] = useState(() => {
+                return localStorage.getItem('darkMode') === 'true';
+            });
+            const [exportSelection, setExportSelection] = useState([]);
+            const [sortBy, setSortBy] = useState('popular');
+
+            useEffect(() => {
+                localStorage.setItem('favoritePrompts', JSON.stringify(favorites));
+            }, [favorites]);
+
+            useEffect(() => {
+                localStorage.setItem('darkMode', darkMode);
+                if (darkMode) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+            }, [darkMode]);
+
+            const copyToClipboard = (text, index) => {
+                navigator.clipboard.writeText(text);
+                setCopiedPrompt(index);
+                setTimeout(() => setCopiedPrompt(null), 2000);
+            };
+
+            const toggleFavorite = (categoryKey, promptIndex) => {
+                const favoriteId = `${categoryKey}-${promptIndex}`;
+                setFavorites(prev => 
+                    prev.includes(favoriteId) 
+                        ? prev.filter(id => id !== favoriteId)
+                        : [...prev, favoriteId]
+                );
+            };
+
+            const isFavorite = (categoryKey, promptIndex) => {
+                return favorites.includes(`${categoryKey}-${promptIndex}`);
+            };
+
+            const toggleExportSelection = (categoryKey, promptIndex) => {
+                const id = `${categoryKey}-${promptIndex}`;
+                setExportSelection(prev =>
+                    prev.includes(id)
+                        ? prev.filter(i => i !== id)
+                        : [...prev, id]
+                );
+            };
+
+            const exportSelected = () => {
+                let exportText = "SELECTED AI PROMPTS FOR SMALL BUSINESS\\n\\n";
+                exportText += "=".repeat(60) + "\\n\\n";
+
+                exportSelection.forEach(id => {
+                    const [catKey, promptIdx] = id.split('-');
+                    const category = promptDatabase[catKey];
+                    const prompt = category.prompts[parseInt(promptIdx)];
+                    
+                    exportText += `CATEGORY: ${category.title}\\n`;
+                    exportText += `TITLE: ${prompt.title}\\n`;
+                    exportText += `DESCRIPTION: ${prompt.description}\\n`;
+                    exportText += `DIFFICULTY: ${prompt.difficulty}\\n\\n`;
+                    exportText += `PROMPT:\\n${prompt.prompt}\\n\\n`;
+                    exportText += "=".repeat(60) + "\\n\\n";
+                });
+
+                const blob = new Blob([exportText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ai-prompts-export.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                alert(`Exported ${exportSelection.length} prompts successfully!`);
+            };
+
+            const sharePrompt = (prompt, categoryName) => {
+                const shareText = `Check out this AI prompt:\\n\\n${prompt.title}\\n${prompt.description}\\n\\nPrompt: ${prompt.prompt}`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: prompt.title,
+                        text: shareText
+                    }).catch(() => {
+                        copyToClipboard(shareText, 'share');
+                    });
+                } else {
+                    copyToClipboard(shareText, 'share');
+                    alert('Prompt copied to clipboard for sharing!');
+                }
+            };
+
+            const filteredResults = useMemo(() => {
+                if (!searchQuery && !showFavoritesOnly) return [];
+                
+                const results = [];
+                
+                Object.entries(promptDatabase).forEach(([categoryKey, category]) => {
+                    category.prompts.forEach((prompt, index) => {
+                        if (showFavoritesOnly && !isFavorite(categoryKey, index)) {
+                            return;
+                        }
+
+                        if (selectedIndustry !== 'all' && !prompt.industry.includes(selectedIndustry) && !prompt.industry.includes('all')) {
+                            return;
+                        }
+
+                        if (selectedDifficulty !== 'all' && prompt.difficulty !== selectedDifficulty) {
+                            return;
+                        }
+
+                        if (searchQuery) {
+                            const query = searchQuery.toLowerCase();
+                            const matchScore = 
+                                (prompt.title.toLowerCase().includes(query) ? 3 : 0) +
+                                (prompt.description.toLowerCase().includes(query) ? 2 : 0) +
+                                (prompt.prompt.toLowerCase().includes(query) ? 1 : 0) +
+                                (category.title.toLowerCase().includes(query) ? 2 : 0);
+                            
+                            if (matchScore === 0) return;
+                            
+                            results.push({
+                                ...prompt,
+                                category: category.title,
+                                categoryColor: category.color,
+                                categoryKey,
+                                promptIndex: index,
+                                matchScore
+                            });
+                        } else if (showFavoritesOnly) {
+                            results.push({
+                                ...prompt,
+                                category: category.title,
+                                categoryColor: category.color,
+                                categoryKey,
+                                promptIndex: index,
+                                matchScore: 0
+                            });
+                        }
+                    });
+                });
+                
+                // Sort results
+                if (sortBy === 'popular') {
+                    results.sort((a, b) => b.usageCount - a.usageCount);
+                } else if (sortBy === 'rating') {
+                    results.sort((a, b) => b.rating - a.rating);
+                } else if (sortBy === 'relevance') {
+                    results.sort((a, b) => b.matchScore - a.matchScore);
+                }
+                
+                return results;
+            }, [searchQuery, showFavoritesOnly, selectedIndustry, selectedDifficulty, favorites, sortBy]);
+
+            const getCurrentPrompts = () => {
+                if (!selectedCategory) return [];
+                
+                let prompts = promptDatabase[selectedCategory].prompts.filter((prompt, index) => {
+                    if (showFavoritesOnly && !isFavorite(selectedCategory, index)) {
+                        return false;
+                    }
+                    if (selectedIndustry !== 'all' && !prompt.industry.includes(selectedIndustry) && !prompt.industry.includes('all')) {
+                        return false;
+                    }
+                    if (selectedDifficulty !== 'all' && prompt.difficulty !== selectedDifficulty) {
+                        return false;
+                    }
+                    return true;
+                });
+
+                // Sort
+                if (sortBy === 'popular') {
+                    prompts.sort((a, b) => b.usageCount - a.usageCount);
+                } else if (sortBy === 'rating') {
+                    prompts.sort((a, b) => b.rating - a.rating);
+                }
+
+                return prompts;
+            };
+
+            const getDifficultyColor = (difficulty) => {
+                switch(difficulty) {
+                    case 'beginner': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+                    case 'intermediate': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+                    case 'advanced': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+                    default: return 'bg-gray-100 text-gray-800';
+                }
+            };
+
+            const PromptCard = ({ prompt, categoryKey, promptIndex, categoryColor, categoryName }) => {
+                const promptId = `${categoryKey}-${promptIndex}`;
+                const isFav = isFavorite(categoryKey, promptIndex);
+                const isSelected = exportSelection.includes(promptId);
+
+                return (
+                    <div className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6 relative">
+                        <div className="absolute top-4 right-4 flex gap-2">
+                            <button
+                                onClick={() => toggleExportSelection(categoryKey, promptIndex)}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    isSelected ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                                title={isSelected ? "Remove from export" : "Add to export"}
+                            >
+                                <i className="fas fa-file-export"></i>
+                            </button>
+                            <button
+                                onClick={() => toggleFavorite(categoryKey, promptIndex)}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    isFav ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                                }`}
+                                title={isFav ? "Remove from favorites" : "Add to favorites"}
+                            >
+                                <i className={`${isFav ? 'fas' : 'far'} fa-heart text-xl`}></i>
+                            </button>
+                        </div>
+
+                        <div className="flex items-start justify-between mb-3 pr-20">
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                    {categoryName && (
+                                        <span className={`${categoryColor} text-white text-xs px-2 py-1 rounded`}>
+                                            {categoryName}
+                                        </span>
+                                    )}
+                                    <span className={`text-xs px-2 py-1 rounded ${getDifficultyColor(prompt.difficulty)}`}>
+                                        {prompt.difficulty}
+                                    </span>
+                                    {prompt.industry && !prompt.industry.includes('all') && (
+                                        <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+                                            {prompt.industry.join(', ')}
+                                        </span>
+                                    )}
+                                </div>
+                                <h3 className="text-xl font-semibold text-slate-900">{prompt.title}</h3>
+                                <p className="text-slate-600 mt-1">{prompt.description}</p>
+                                
+                                <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
+                                    <div className="flex items-center gap-1">
+                                        <i className="fas fa-star text-yellow-500"></i>
+                                        <span>{prompt.rating.toFixed(1)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        <i className="fas fa-users"></i>
+                                        <span>{prompt.usageCount.toLocaleString()} uses</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="bg-slate-50 rounded-lg p-4 mb-3 border border-slate-200">
+                            <p className="text-slate-700 font-mono text-sm whitespace-pre-wrap">{prompt.prompt}</p>
+                        </div>
+                        
+                        <div className="flex gap-2 flex-wrap">
+                            <button
+                                onClick={() => copyToClipboard(prompt.prompt, promptId)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                            >
+                                <i className={`fas ${copiedPrompt === promptId ? 'fa-check' : 'fa-copy'}`}></i>
+                                {copiedPrompt === promptId ? 'Copied!' : 'Copy Prompt'}
+                            </button>
+                            <button
+                                onClick={() => sharePrompt(prompt, categoryName || promptDatabase[categoryKey].title)}
+                                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+                            >
+                                <i className="fas fa-share-alt"></i>
+                                Share
+                            </button>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Calculate total prompts
+            const totalPrompts = Object.values(promptDatabase).reduce((sum, cat) => sum + cat.prompts.length, 0);
+
+            return (
+                <div className={`min-h-screen ${darkMode ? 'dark-mode' : 'bg-gradient-to-br from-slate-50 to-slate-100'}`}>
+                    {/* Header */}
+                    <div className="bg-white shadow-sm border-b">
+                        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                    <i className="fas fa-lightbulb text-4xl text-yellow-500"></i>
+                                    <div>
+                                        <h1 className="text-3xl font-bold text-slate-900">Small Business AI Prompt Library</h1>
+                                        <p className="text-slate-600 mt-1">{totalPrompts} professional prompts across 13 categories</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setDarkMode(!darkMode)}
+                                    className="p-3 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors"
+                                    title="Toggle dark mode"
+                                >
+                                    <i className={`fas ${darkMode ? 'fa-sun' : 'fa-moon'} text-xl`}></i>
+                                </button>
+                            </div>
+                            
+                            {/* Search Bar */}
+                            <div className="relative mb-4">
+                                <i className="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                <input
+                                    type="text"
+                                    placeholder="Search for prompts (e.g., 'customer email', 'budget', 'social media')..."
+                                    className="w-full pl-12 pr-4 py-3 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:outline-none text-lg"
+                                    value={searchQuery}
+                                    onChange={(e) => {
+                                        setSearchQuery(e.target.value);
+                                        setSelectedCategory(null);
+                                        setShowFavoritesOnly(false);
+                                    }}
+                                />
+                            </div>
+
+                            {/* Filters */}
+                            <div className="flex flex-wrap gap-3 items-center">
+                                <button
+                                    onClick={() => {
+                                        setShowFavoritesOnly(!showFavoritesOnly);
+                                        setSearchQuery('');
+                                        setSelectedCategory(null);
+                                    }}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                                        showFavoritesOnly 
+                                            ? 'bg-red-500 text-white' 
+                                            : 'bg-white border-2 border-slate-200 text-slate-700 hover:border-red-300'
+                                    }`}
+                                >
+                                    <i className={`${showFavoritesOnly ? 'fas' : 'far'} fa-heart mr-2`}></i>
+                                    Favorites ({favorites.length})
+                                </button>
+
+                                <select
+                                    value={selectedIndustry}
+                                    onChange={(e) => setSelectedIndustry(e.target.value)}
+                                    className="px-4 py-2 rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none"
+                                >
+                                    <option value="all">All Industries</option>
+                                    <option value="retail">Retail</option>
+                                    <option value="services">Services</option>
+                                    <option value="tech">Tech</option>
+                                    <option value="ecommerce">E-commerce</option>
+                                    <option value="manufacturing">Manufacturing</option>
+                                </select>
+
+                                <select
+                                    value={selectedDifficulty}
+                                    onChange={(e) => setSelectedDifficulty(e.target.value)}
+                                    className="px-4 py-2 rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none"
+                                >
+                                    <option value="all">All Levels</option>
+                                    <option value="beginner">Beginner</option>
+                                    <option value="intermediate">Intermediate</option>
+                                    <option value="advanced">Advanced</option>
+                                </select>
+
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="px-4 py-2 rounded-lg border-2 border-slate-200 focus:border-blue-500 focus:outline-none"
+                                >
+                                    <option value="popular">Most Popular</option>
+                                    <option value="rating">Highest Rated</option>
+                                    {searchQuery && <option value="relevance">Most Relevant</option>}
+                                </select>
+
+                                {exportSelection.length > 0 && (
+                                    <button
+                                        onClick={exportSelected}
+                                        className="px-4 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 transition-colors ml-auto"
+                                    >
+                                        <i className="fas fa-download mr-2"></i>
+                                        Export ({exportSelection.length})
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+                        {/* Search/Filter Results */}
+                        {(searchQuery || showFavoritesOnly) && (
+                            <div className="mb-8">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-2xl font-bold text-slate-900">
+                                        {showFavoritesOnly ? 'Your Favorites' : 'Search Results'} ({filteredResults.length})
+                                    </h2>
+                                    <button
+                                        onClick={() => {
+                                            setSearchQuery('');
+                                            setShowFavoritesOnly(false);
+                                        }}
+                                        className="text-blue-600 hover:text-blue-700 font-medium"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+                                
+                                {filteredResults.length === 0 ? (
+                                    <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+                                        <i className="fas fa-search text-4xl text-slate-300 mb-3"></i>
+                                        <p className="text-slate-600 text-lg">
+                                            {showFavoritesOnly 
+                                                ? "You haven't added any favorites yet. Click the heart icon on prompts you like!"
+                                                : `No prompts found matching "${searchQuery}"`
+                                            }
+                                        </p>
+                                        <p className="text-slate-500 mt-2">Try a different search or browse categories below</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {filteredResults.map((prompt, index) => (
+                                            <PromptCard
+                                                key={index}
+                                                prompt={prompt}
+                                                categoryKey={prompt.categoryKey}
+                                                promptIndex={prompt.promptIndex}
+                                                categoryColor={prompt.categoryColor}
+                                                categoryName={prompt.category}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Categories Grid */}
+                        {!searchQuery && !selectedCategory && !showFavoritesOnly && (
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-900 mb-6">Browse by Category</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {Object.entries(promptDatabase).map(([key, category]) => (
+                                        <button
+                                            key={key}
+                                            onClick={() => setSelectedCategory(key)}
+                                            className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all p-6 text-left group"
+                                        >
+                                            <div className={`${category.color} w-14 h-14 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                                                <i className={`fas ${category.icon} text-2xl text-white`}></i>
+                                            </div>
+                                            <h3 className="text-xl font-bold text-slate-900 mb-2">{category.title}</h3>
+                                            <p className="text-slate-600">{category.prompts.length} prompts available</p>
+                                            <div className="mt-4 text-blue-600 font-medium flex items-center gap-2">
+                                                View Prompts <i className="fas fa-arrow-right"></i>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Category Detail View */}
+                        {!searchQuery && selectedCategory && !showFavoritesOnly && (
+                            <div>
+                                <button
+                                    onClick={() => setSelectedCategory(null)}
+                                    className="text-blue-600 hover:text-blue-700 font-medium mb-6 flex items-center gap-2"
+                                >
+                                    <i className="fas fa-arrow-left"></i> Back to Categories
+                                </button>
+                                
+                                <div className="flex items-center gap-4 mb-6">
+                                    <div className={`${promptDatabase[selectedCategory].color} w-16 h-16 rounded-lg flex items-center justify-center`}>
+                                        <i className={`fas ${promptDatabase[selectedCategory].icon} text-3xl text-white`}></i>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-3xl font-bold text-slate-900">{promptDatabase[selectedCategory].title}</h2>
+                                        <p className="text-slate-600 mt-1">
+                                            {getCurrentPrompts().length} prompts
+                                            {(selectedIndustry !== 'all' || selectedDifficulty !== 'all') && ' (filtered)'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    {getCurrentPrompts().map((prompt, promptIndex) => {
+                                        const originalIndex = promptDatabase[selectedCategory].prompts.indexOf(prompt);
+                                        return (
+                                            <PromptCard
+                                                key={originalIndex}
+                                                prompt={prompt}
+                                                categoryKey={selectedCategory}
+                                                promptIndex={originalIndex}
+                                                categoryColor={promptDatabase[selectedCategory].color}
+                                            />
+                                        );
+                                    })}
+                                    {getCurrentPrompts().length === 0 && (
+                                        <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+                                            <i className="fas fa-filter text-4xl text-slate-300 mb-3"></i>
+                                            <p className="text-slate-600 text-lg">No prompts match your current filters</p>
+                                            <p className="text-slate-500 mt-2">Try adjusting your filters</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="bg-white border-t mt-12 py-6">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-600">
+                            <p className="mb-2">💡 <strong>Tip:</strong> Customize prompts by replacing bracketed sections with your specific information</p>
+                            <p className="text-sm text-slate-500">Made with ❤️ for small business owners | {totalPrompts} prompts across 13 categories</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
